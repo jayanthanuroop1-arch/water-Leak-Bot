@@ -6,7 +6,6 @@ const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
-// TEMP USER STORAGE
 const users = {};
 
 app.get("/", (req, res) => {
@@ -20,7 +19,6 @@ app.post("/whatsapp", (req, res) => {
   const from = req.body.From;
   const msg = req.body.Body ? req.body.Body.trim() : "";
 
-  // CREATE USER SESSION
   if (!users[from]) {
 
     users[from] = {
@@ -45,7 +43,7 @@ app.post("/whatsapp", (req, res) => {
     user.step = 1;
 
     twiml.message(
-      `🚰 Welcome to Water Leakage Repair Service
+`🚰 Welcome to Water Leakage Repair Service
 
 Select your leakage issue:
 
@@ -77,7 +75,7 @@ Reply with a number.`
       user.step = 2;
 
       twiml.message(
-        `✅ Selected Issue: ${user.issue}
+`✅ Selected Issue: ${user.issue}
 
 📍 Please enter your full address`
       );
@@ -85,7 +83,7 @@ Reply with a number.`
     } else {
 
       twiml.message(
-        `❌ Invalid option
+`❌ Invalid option
 
 Reply only with:
 1, 2, 3, 4 or 5`
@@ -101,7 +99,7 @@ Reply only with:
     user.step = 3;
 
     twiml.message(
-      `📌 Please share your LIVE LOCATION
+`📌 Please share your LIVE LOCATION
 
 In WhatsApp:
 Attachment → Location → Send Current Location`
@@ -114,18 +112,18 @@ Attachment → Location → Send Current Location`
     if (req.body.Latitude && req.body.Longitude) {
 
       user.location =
-        `Latitude: ${req.body.Latitude}, Longitude: ${req.body.Longitude}`;
+`Latitude: ${req.body.Latitude}, Longitude: ${req.body.Longitude}`;
 
       user.step = 4;
 
       twiml.message(
-        `📮 Please enter your PINCODE`
+`📮 Please enter your PINCODE`
       );
 
     } else {
 
       twiml.message(
-        `❌ Please send your LIVE LOCATION properly
+`❌ Please send your LIVE LOCATION properly
 
 Use:
 Attachment → Location`
@@ -141,7 +139,7 @@ Attachment → Location`
     user.step = 5;
 
     twiml.message(
-      `📞 Please enter your PHONE NUMBER`
+`📞 Please enter your PHONE NUMBER`
     );
   }
 
@@ -156,7 +154,7 @@ Attachment → Location`
     console.log(user);
 
     twiml.message(
-      `✅ Complaint Registered Successfully
+`✅ Complaint Registered Successfully
 
 🛠️ Issue: ${user.issue}
 
@@ -174,7 +172,7 @@ Technician will contact you shortly.`
   else {
 
     twiml.message(
-      `Send HI to start again`
+`Send HI to start again`
     );
   }
 
