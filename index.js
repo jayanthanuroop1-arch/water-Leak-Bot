@@ -3,48 +3,25 @@ const bodyParser = require("body-parser");
 const MessagingResponse = require("twilio").twiml.MessagingResponse;
 
 const app = express();
+
 app.use(bodyParser.urlencoded({ extended: false }));
-
-const users = {};
-
-app.get("/", (req, res) => {
-  res.send("Water Leakage Bot Running");
-});
 
 app.post("/whatsapp", (req, res) => {
 
-  const twiml = new MessagingResponse();
+    const twiml = new MessagingResponse();
 
-  const from = req.body.From;
-  const msg = req.body.Body ? req.body.Body.trim() : "";
+    const msg = req.body.Body.toLowerCase().trim();
 
-  if (!users[from]) {
+    if (
+        msg === "hi" ||
+        msg === "hello" ||
+        msg === "start"
+    ) {
 
-    users[from] = {
-      step: 0,
-      issue: "",
-      address: "",
-      location: "",
-      pincode: "",
-      phone: ""
-    };
-  }
+        twiml.message(
+`Welcome to Water Leakage Support 🚰
 
-  const user = users[from];
-
-  // START
-  if (
-    msg.toLowerCase() === "hi" ||
-    msg.toLowerCase() === "hello" ||
-    msg.toLowerCase() === "start"
-  ) {
-
-    user.step = 1;
-
-    twiml.message(
-`🚰 Welcome to Water Leakage Repair Service
-
-Select your leakage issue:
+Please select an option:
 
 1️⃣ Pipe Leakage
 2️⃣ Tank Overflow
@@ -53,137 +30,90 @@ Select your leakage issue:
 5️⃣ Kitchen Sink Leakage
 
 Reply with a number.`
-    );
-  }
+        );
 
-  // ISSUE SELECT
-  else if (user.step === 1) {
+    }
 
-    const issues = {
-      "1": "Pipe Leakage",
-      "2": "Tank Overflow",
-      "3": "Tap Leakage",
-      "4": "Bathroom Leakage",
-      "5": "Kitchen Sink Leakage"
-    };
+    else if (msg === "1") {
 
-    if (issues[msg]) {
+        twiml.message(
+`Pipe Leakage selected 🚰
 
-      user.issue = issues[msg];
+Please send:
+• Leak photo/video
+• Your location
+• Urgency level`
+        );
 
-      user.step = 2;
+    }
 
-      twiml.message(
-`✅ Selected Issue: ${user.issue}
+    else if (msg === "2") {
 
-📍 Please enter your full address`
-      );
+        twiml.message(
+`Tank Overflow selected 💧
 
-    } else {
+Please send:
+• Tank photo/video
+• Address
+• Approx overflow level`
+        );
 
-      twiml.message(
-`❌ Invalid option
+    }
 
-Reply only with:
+    else if (msg === "3") {
+
+        twiml.message(
+`Tap Leakage selected 🚿
+
+Please send:
+• Tap photo
+• Is water continuously leaking?`
+        );
+
+    }
+
+    else if (msg === "4") {
+
+        twiml.message(
+`Bathroom Leakage selected 🚽
+
+Please send:
+• Leakage area photo
+• Floor/wall details`
+        );
+
+    }
+
+    else if (msg === "5") {
+
+        twiml.message(
+`Kitchen Sink Leakage selected 🍽️
+
+Please send:
+• Sink photo
+• Pipe condition`
+        );
+
+    }
+
+    else {
+
+        twiml.message(
+`Invalid option ❌
+
+Reply with:
 1, 2, 3, 4 or 5`
-      );
+        );
+
     }
-  }
 
-  // ADDRESS
-  else if (user.step === 2) {
+    res.writeHead(200, { "Content-Type": "text/xml" });
+    res.end(twiml.toString());
 
-    user.address = msg;
-
-    user.step = 3;
-
-    twiml.message(
-`📌 Please share your LIVE LOCATION
-
-In WhatsApp:
-Attachment → Location → Send Current Location`
-    );
-  }
-
-  // LOCATION
-  else if (user.step === 3) {
-
-    if (req.body.Latitude && req.body.Longitude) {
-
-      user.location =
-`Latitude: ${req.body.Latitude}, Longitude: ${req.body.Longitude}`;
-
-      user.step = 4;
-
-      twiml.message(
-`📮 Please enter your PINCODE`
-      );
-
-    } else {
-
-      twiml.message(
-`❌ Please send your LIVE LOCATION properly
-
-Use:
-Attachment → Location`
-      );
-    }
-  }
-
-  // PINCODE
-  else if (user.step === 4) {
-
-    user.pincode = msg;
-
-    user.step = 5;
-
-    twiml.message(
-`📞 Please enter your PHONE NUMBER`
-    );
-  }
-
-  // PHONE
-  else if (user.step === 5) {
-
-    user.phone = msg;
-
-    user.step = 6;
-
-    console.log("NEW COMPLAINT");
-    console.log(user);
-
-    twiml.message(
-`✅ Complaint Registered Successfully
-
-🛠️ Issue: ${user.issue}
-
-📍 Address: ${user.address}
-
-📮 Pincode: ${user.pincode}
-
-📞 Phone: ${user.phone}
-
-Technician will contact you shortly.`
-    );
-  }
-
-  // DEFAULT
-  else {
-
-    twiml.message(
-`Send HI to start again`
-    );
-  }
-
-  res.writeHead(200, {
-    "Content-Type": "text/xml"
-  });
-
-  res.end(twiml.toString());
 });
 
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+    console.log(`Bot running on port ${PORT}`);
 });
