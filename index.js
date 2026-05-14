@@ -1,85 +1,192 @@
-const express = require('express');
-const twilio = require('twilio');
+const express = require("express");
+const bodyParser = require("body-parser");
+const MessagingResponse = require("twilio").twiml.MessagingResponse;
 
 const app = express();
 
-app.use(express.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: false }));
 
-// Store users temporarily
+// TEMP USER STORAGE
 const users = {};
 
-app.post('/whatsapp', (req, res) => {
+app.get("/", (req, res) => {
+  res.send("Water Leakage Bot Running");
+});
 
-  const message = req.body.Body.toLowerCase();
-  const sender = req.body.From;
+app.post("/whatsapp", (req, res) => {
 
-  const twiml = new twilio.twiml.MessagingResponse();
+  const twiml = new MessagingResponse();
 
-  // Create user session
-  if (!users[sender]) {
+  const from = req.body.From;
+  const msg = req.body.Body ? req.body.Body.trim() : "";
 
-    users[sender] = {
-      step: 1
+  // CREATE USER SESSION
+  if (!users[from]) {
+
+    users[from] = {
+      step: 0,
+      issue: "",
+      address: "",
+      location: "",
+      pincode: "",
+      phone: ""
     };
+  }
+
+  const user = users[from];
+
+  // START
+  if (
+    msg.toLowerCase() === "hi" ||
+    msg.toLowerCase() === "hello" ||
+    msg.toLowerCase() === "start"
+  ) {
+
+    user.step = 1;
 
     twiml.message(
-      'Hello 👋 Welcome to Water Leakage Repair Service.\nWhat issue are you facing?'
+      `🚰 Welcome to Water Leakage Repair Service
+
+Select your leakage issue:
+
+1️⃣ Pipe Leakage
+2️⃣ Tank Overflow
+3️⃣ Tap Leakage
+4️⃣ Bathroom Leakage
+5️⃣ Kitchen Sink Leakage
+
+Reply with a number.`
     );
+  }
 
-  } else {
+  // ISSUE SELECT
+  else if (user.step === 1) {
 
-    const step = users[sender].step;
+    const issues = {
+      "1": "Pipe Leakage",
+      "2": "Tank Overflow",
+      "3": "Tap Leakage",
+      "4": "Bathroom Leakage",
+      "5": "Kitchen Sink Leakage"
+    };
 
-    // STEP 1
-    if (step === 1) {
+    if (issues[msg]) {
 
-      users[sender].issue = message;
-      users[sender].step = 2;
+      user.issue = issues[msg];
 
-      twiml.message(
-        'Please share your address 📍'
-      );
-
-    }
-
-    // STEP 2
-    else if (step === 2) {
-
-      users[sender].address = message;
-      users[sender].step = 3;
+      user.step = 2;
 
       twiml.message(
-        'Please share your contact number ☎️'
+        `✅ Selected Issue: ${user.issue}
+
+📍 Please enter your full address`
       );
 
-    }
-
-    // STEP 3
-    else if (step === 3) {
-
-      users[sender].phone = message;
+    } else {
 
       twiml.message(
-        'Thank you ✅ Our technician will contact you shortly.'
+        `❌ Invalid option
+
+Reply only with:
+1, 2, 3, 4 or 5`
+      );
+    }
+  }
+
+  // ADDRESS
+  else if (user.step === 2) {
+
+    user.address = msg;
+
+    user.step = 3;
+
+    twiml.message(
+      `📌 Please share your LIVE LOCATION
+
+In WhatsApp:
+Attachment → Location → Send Current Location`
+    );
+  }
+
+  // LOCATION
+  else if (user.step === 3) {
+
+    if (req.body.Latitude && req.body.Longitude) {
+
+      user.location =
+        `Latitude: ${req.body.Latitude}, Longitude: ${req.body.Longitude}`;
+
+      user.step = 4;
+
+      twiml.message(
+        `📮 Please enter your PINCODE`
       );
 
-      console.log(users[sender]);
+    } else {
 
-      // Reset conversation
-      delete users[sender];
+      twiml.message(
+        `❌ Please send your LIVE LOCATION properly
 
+Use:
+Attachment → Location`
+      );
     }
+  }
 
+  // PINCODE
+  else if (user.step === 4) {
+
+    user.pincode = msg;
+
+    user.step = 5;
+
+    twiml.message(
+      `📞 Please enter your PHONE NUMBER`
+    );
+  }
+
+  // PHONE
+  else if (user.step === 5) {
+
+    user.phone = msg;
+
+    user.step = 6;
+
+    console.log("NEW COMPLAINT");
+    console.log(user);
+
+    twiml.message(
+      `✅ Complaint Registered Successfully
+
+🛠️ Issue: ${user.issue}
+
+📍 Address: ${user.address}
+
+📮 Pincode: ${user.pincode}
+
+📞 Phone: ${user.phone}
+
+Technician will contact you shortly.`
+    );
+  }
+
+  // DEFAULT
+  else {
+
+    twiml.message(
+      `Send HI to start again`
+    );
   }
 
   res.writeHead(200, {
-    'Content-Type': 'text/xml'
+    "Content-Type": "text/xml"
   });
 
   res.end(twiml.toString());
-
 });
 
-app.listen(5000, () => {
-  console.log('Bot running on port 5000');
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
