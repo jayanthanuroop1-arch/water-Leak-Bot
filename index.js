@@ -3,7 +3,6 @@ const bodyParser = require("body-parser");
 const MessagingResponse = require("twilio").twiml.MessagingResponse;
 
 const app = express();
-
 app.use(bodyParser.urlencoded({ extended: false }));
 
 const users = {};
