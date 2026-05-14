@@ -1,4 +1,4 @@
- const express = require("express");
+const express = require("express");
 const bodyParser = require("body-parser");
 const MessagingResponse = require("twilio").twiml.MessagingResponse;
 
@@ -14,71 +14,31 @@ app.post("/whatsapp", (req, res) => {
 
     if (msg === "hi" || msg === "hello" || msg === "start") {
 
-        twiml.message(`Welcome to Water Leakage Support 🚰
+        twiml.message("Welcome to Water Leakage Support 🚰\n\n1️⃣ Pipe Leakage\n2️⃣ Tank Overflow\n3️⃣ Tap Leakage\n4️⃣ Bathroom Leakage\n5️⃣ Kitchen Sink Leakage\n\nReply with a number.");
 
-1️⃣ Pipe Leakage
-2️⃣ Tank Overflow
-3️⃣ Tap Leakage
-4️⃣ Bathroom Leakage
-5️⃣ Kitchen Sink Leakage
+    } else if (msg === "1") {
 
-Reply with a number.`);
+        twiml.message("Pipe Leakage selected 🚰\n\nSend:\n• Leak photo/video\n• Location\n• Urgency");
 
-    }
+    } else if (msg === "2") {
 
-    else if (msg === "1") {
+        twiml.message("Tank Overflow selected 💧\n\nSend:\n• Tank photo/video\n• Address");
 
-        twiml.message(`Pipe Leakage selected 🚰
+    } else if (msg === "3") {
 
-Send:
-• Leak photo/video
-• Location
-• Urgency`);
+        twiml.message("Tap Leakage selected 🚿\n\nSend:\n• Tap photo");
 
-    }
+    } else if (msg === "4") {
 
-    else if (msg === "2") {
+        twiml.message("Bathroom Leakage selected 🚽\n\nSend:\n• Leakage area photo");
 
-        twiml.message(`Tank Overflow selected 💧
+    } else if (msg === "5") {
 
-Send:
-• Tank photo/video
-• Address`);
+        twiml.message("Kitchen Sink Leakage selected 🍽️\n\nSend:\n• Sink photo");
 
-    }
+    } else {
 
-    else if (msg === "3") {
-
-        twiml.message(`Tap Leakage selected 🚿
-
-Send:
-• Tap photo`);
-
-    }
-
-    else if (msg === "4") {
-
-        twiml.message(`Bathroom Leakage selected 🚽
-
-Send:
-• Leakage area photo`);
-
-    }
-
-    else if (msg === "5") {
-
-        twiml.message(`Kitchen Sink Leakage selected 🍽️
-
-Send:
-• Sink photo`);
-
-    }
-
-    else {
-
-        twiml.message(`Invalid option ❌
-
-Reply with 1, 2, 3, 4 or 5`);
+        twiml.message("Invalid option ❌\n\nReply with 1, 2, 3, 4 or 5");
 
     }
 
